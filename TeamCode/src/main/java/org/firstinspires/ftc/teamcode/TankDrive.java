@@ -71,7 +71,7 @@ public final class TankDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 0;
+        public double inPerTick = 0.01745329251;
         public double trackWidthTicks = 0;
 
         // feedforward parameters (in tick units)
