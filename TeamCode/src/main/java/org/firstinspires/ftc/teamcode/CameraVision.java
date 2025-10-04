@@ -8,8 +8,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -24,6 +26,7 @@ public class CameraVision {
      * The variable to store our instance of the vision portal.
      */
     private VisionPortal visionPortal;
+
     public CameraVision(HardwareMap hardwareMap, Telemetry telemetry) {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -77,7 +80,7 @@ public class CameraVision {
         //builder.setAutoStopLiveView(false);
 
 
-        telemetry.addData("status","camera initialized");
+        telemetry.addData("status", "camera initialized");
         // Set and enable the processor.
         builder.addProcessor(aprilTag);
 
@@ -91,4 +94,28 @@ public class CameraVision {
     public List<org.firstinspires.ftc.vision.apriltag.AprilTagDetection> detect() {
         return aprilTag.getDetections();
     }
+
+    public int readObelisk() {
+        List<AprilTagDetection> detections = aprilTag.getDetections();
+        for (int i= 0; i<detections.size(); i++) {
+            int tagID = detections.get(i).id;
+            if (tagID == 1) {
+                return 1;
+            }
+            if (tagID == 2) {
+                return 2;
+            }
+            if (tagID == 3) {
+                return 3;
+            }
+        }
+        return 0;
+    }
+        // return 0 for nothing
+        // return -1 for error
+        // return 1-3 for each different ids
+
+//    public Pose3D getPose() {
+//
+//    }
 }
