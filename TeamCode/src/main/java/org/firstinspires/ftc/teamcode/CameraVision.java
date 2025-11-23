@@ -20,6 +20,7 @@ import java.util.List;
 @Config
 public class CameraVision {
     private final AprilTagProcessor aprilTag;
+    private final VisionPortal visionPortal;
     public static String CAMERA_NAME = "Webcam 1";
 
     private Telemetry telemetry;
@@ -82,7 +83,7 @@ public class CameraVision {
         builder.addProcessor(aprilTag);
 
         // Build the Vision Portal, using the above settings.
-        VisionPortal visionPortal = builder.build();
+        visionPortal = builder.build();
 
         FtcDashboard.getInstance().startCameraStream(visionPortal, 0);
         telemetry.addData("CameraVision", "Initialized");
@@ -90,5 +91,9 @@ public class CameraVision {
 
     public List<org.firstinspires.ftc.vision.apriltag.AprilTagDetection> detect() {
         return aprilTag.getDetections();
+    }
+
+    public void stop() {
+        visionPortal.close();
     }
 }

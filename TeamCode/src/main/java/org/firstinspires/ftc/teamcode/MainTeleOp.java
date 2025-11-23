@@ -5,7 +5,10 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @TeleOp(name = "Main TeleOp", group = "Main")
 public class MainTeleOp extends OpMode {
@@ -18,30 +21,22 @@ public class MainTeleOp extends OpMode {
     private DcMotor intake;
     private BallLaunch ballLaunch;
 
+    private DcMotor liftLeft;
+    private DcMotor liftRight;
+
     private CameraVision cameraVision;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, dash.getTelemetry());
 
         telemetry.addData("Status", "Initializing");
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
         frontLeft = hardwareMap.get(DcMotor.class, "front_left");
         backLeft = hardwareMap.get(DcMotor.class, "back_left");
         frontRight = hardwareMap.get(DcMotor.class, "front_right");
         backRight = hardwareMap.get(DcMotor.class, "back_right");
 
-        intake = hardwareMap.get(DcMotor.class, "intake");
-
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
         frontRight.setDirection(DcMotor.Direction.FORWARD);
@@ -52,11 +47,24 @@ public class MainTeleOp extends OpMode {
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        intake.setDirection(DcMotor.Direction.FORWARD);
+        intake = hardwareMap.get(DcMotor.class, "intake");
+
+        intake.setDirection(DcMotor.Direction.REVERSE);
+
         ballLaunch = new BallLaunch(hardwareMap, telemetry);
         //cameraVision = new CameraVision(hardwareMap, telemetry);
+        liftLeft = hardwareMap.get(DcMotor.class, "lift_left");
+        liftRight = hardwareMap.get(DcMotor.class, "lift_right");
+        liftLeft.setDirection(DcMotor.Direction.REVERSE);
+        liftRight.setDirection(DcMotor.Direction.FORWARD);
 
-        // Tell the driver that initialization is complete.
+
+        liftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        liftRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
+
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
     }
@@ -73,34 +81,31 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        double max;
+        double y = -gamepad1.left_stick_y;
+        double x = gamepad1.left_stick_x;
+        double turn = gamepad1.right_stick_x;
 
-        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-        double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-        double lateral = gamepad1.left_stick_x * 1.1;
-        double yaw = gamepad1.right_stick_x;
+        double theta = Math.atan2(y, x);
+        double power = Math.hypot(x, y);
 
-        // Combine the joystick requests for each axis-motion to determine each wheel's power.
-        // Set up a variable for each drive wheel to save the power level for telemetry.
-        double frontLeftPower = axial + lateral + yaw;
-        double frontRightPower = axial - lateral - yaw;
-        double backLeftPower = axial - lateral + yaw;
-        double backRightPower = axial + lateral - yaw;
+        double sin = Math.sin(theta - Math.PI / 4);
+        double cos = Math.cos(theta - Math.PI / 4);
 
-        // Normalize the values so no wheel power exceeds 100%
-        // This ensures that the robot maintains the desired motion.
-        max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
-        max = Math.max(max, Math.abs(backLeftPower));
-        max = Math.max(max, Math.abs(backRightPower));
+        double max = Math.max(Math.abs(sin), Math.abs(cos));
 
-        if (max > 1.0) {
-            frontLeftPower /= max;
-            frontRightPower /= max;
-            backLeftPower /= max;
-            backRightPower /= max;
+        double frontLeftPower = power * cos / max + turn;
+        double frontRightPower = power * sin / max - turn;
+        double backLeftPower = power * sin / max + turn;
+        double backRightPower = power * cos / max - turn;
+
+
+        if ((power + Math.abs(turn)) > 1) {
+            frontLeftPower /= power + Math.abs(turn);
+            frontRightPower /= power + Math.abs(turn);
+            backLeftPower /= power + Math.abs(turn);
+            backRightPower /= power + Math.abs(turn);
         }
 
-        // Show the elapsed game time and wheel power.
         frontLeft.setPower(frontLeftPower);
         frontRight.setPower(frontRightPower);
         backLeft.setPower(backLeftPower);
@@ -119,10 +124,28 @@ public class MainTeleOp extends OpMode {
         } else {
             ballLaunch.stop();
         }
-        //List<AprilTagDetection> detections = cameraVision.detect();
-        //telemetry.addData("aprilTags", detections.size());
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime);
+
+        double maxLiftPower = 0.50;
+        if (gamepad2.dpad_up && !gamepad2.dpad_down) {
+            liftLeft.setPower(maxLiftPower);
+            liftRight.setPower(maxLiftPower);
+            telemetry.addData("Lift", "up");
+        } else if (gamepad2.dpad_down && !gamepad2.dpad_up) {
+            liftLeft.setPower(-maxLiftPower);
+            liftRight.setPower(-maxLiftPower);
+            telemetry.addData("Lift", "down");
+        } else {
+            liftLeft.setPower(0.0);
+            liftRight.setPower(0.0);
+            telemetry.addData("Lift", "");
+        }
+
+
+
+        // List<AprilTagDetection> detections = cameraVision.detect();
+        // telemetry.addData("aprilTags", detections.size());
+
+        telemetry.addData("Run Time", runtime);
         telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
         telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
         telemetry.update();

@@ -17,7 +17,7 @@
 ## TODO
 ### General
 - [X] Get motors working
-- [ ] Get servos working
+- [X] Get servos working
 - [X] Get colour sensor working
 - [X] Get webcam working
 - [ ] Proper turning and movement

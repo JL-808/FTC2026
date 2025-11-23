@@ -2,18 +2,19 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
 public class BallLaunch {
     public static String OUTTAKE_MOTOR_NAME = "outtake";
-    private DcMotor outtake;
+    private DcMotorEx outtake;
     private Telemetry telemetry;
 
     public BallLaunch(HardwareMap hardwareMap, Telemetry telemetry_) {
         telemetry = telemetry_;
-        outtake = hardwareMap.get(DcMotor.class, OUTTAKE_MOTOR_NAME);
+        outtake = hardwareMap.get(DcMotorEx.class, OUTTAKE_MOTOR_NAME);
         outtake.setDirection(DcMotor.Direction.FORWARD);
         telemetry.addData("BallLaunch", "Initialized");
     }
