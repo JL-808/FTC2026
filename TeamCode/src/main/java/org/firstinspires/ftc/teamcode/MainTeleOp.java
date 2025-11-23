@@ -24,6 +24,10 @@ public class MainTeleOp extends OpMode {
     private DcMotor liftLeft;
     private DcMotor liftRight;
 
+    double maxLiftPower = 0.50;
+
+
+
     private CameraVision cameraVision;
 
     @Override
@@ -125,7 +129,8 @@ public class MainTeleOp extends OpMode {
             ballLaunch.stop();
         }
 
-        double maxLiftPower = 0.50;
+
+
         if (gamepad2.dpad_up && !gamepad2.dpad_down) {
             liftLeft.setPower(maxLiftPower);
             liftRight.setPower(maxLiftPower);
@@ -138,6 +143,10 @@ public class MainTeleOp extends OpMode {
             liftLeft.setPower(0.0);
             liftRight.setPower(0.0);
             telemetry.addData("Lift", "");
+        }
+        if (liftRight.getPower() == maxLiftPower) {
+            liftLeft.setPower(0);
+            liftRight.setPower(0);
         }
 
 
