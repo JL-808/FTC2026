@@ -139,7 +139,7 @@ public class MainTeleOp extends OpMode {
             liftRight.setPower(0.0);
             telemetry.addData("Lift", "");
         }
-        if (liftRight.getPower() == maxLiftPower) {
+        if (liftRight.getCurrentPosition()==767.2) {
             liftLeft.setPower(0);
             liftRight.setPower(0);
         }
