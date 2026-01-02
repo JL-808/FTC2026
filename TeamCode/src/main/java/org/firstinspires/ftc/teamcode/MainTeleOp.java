@@ -34,7 +34,6 @@ public class MainTeleOp extends OpMode {
 
 
 
-    private CameraVision cameraVision;
 
     @Override
     public void init() {
@@ -161,10 +160,11 @@ public class MainTeleOp extends OpMode {
             liftRight.setPower(0.0);
             telemetry.addData("Lift", "");
         }
-        if (liftRight.getCurrentPosition() == 767.2) {
+        if (liftRight.getCurrentPosition() >= 767.2) {
             liftLeft.setPower(0);
             liftRight.setPower(0);
         }
+
 
 
 
