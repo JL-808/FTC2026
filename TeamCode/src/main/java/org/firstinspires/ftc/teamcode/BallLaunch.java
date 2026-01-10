@@ -10,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class BallLaunch {
     public static String OUTTAKE_MOTOR_NAME = "outtake";
     public double targetVelocity = 70;
+    public double targetServoPosition = 0.6;
     public static double revperticks = 28;
     private Servo launchServo;
     public DcMotorEx outtake;
@@ -26,7 +27,7 @@ public class BallLaunch {
     public void stop() {
         telemetry.addData("BallLaunch", "Stopping");
         outtake.setPower(0.0);
-        launchServo.setPosition(0.1);
+        launchServo.setPosition(0);
         telemetry.addData("BallLaunch", "Stopped");
         telemetry.update();
     }
@@ -40,8 +41,11 @@ public class BallLaunch {
     public double getRadPerSec(){
         return outtake.getVelocity()*2.0*Math.PI/revperticks;
     }
+    public double getServoPosition(){
+        return launchServo.getPosition();
+    }
     public void launch() {
-        launchServo.setPosition(0.6);
+        launchServo.setPosition(targetServoPosition);
         telemetry.addData("BallLaunch", "Launched");
         outtake.setVelocity(0);
         telemetry.update();

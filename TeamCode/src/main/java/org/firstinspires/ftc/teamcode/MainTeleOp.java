@@ -139,6 +139,9 @@ public class MainTeleOp extends OpMode {
                 ballLaunch.launch();
             }
         }
+        if (ballLaunch.getServoPosition() >= ballLaunch.targetServoPosition){
+            ballLaunch.stop();
+        }
 
         //linear slides
         if (gamepad2.dpad_up && !gamepad2.dpad_down) {
