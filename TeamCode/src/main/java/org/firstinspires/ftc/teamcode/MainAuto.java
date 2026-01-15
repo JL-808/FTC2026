@@ -16,11 +16,11 @@ public class MainAuto extends OpMode {
 
         telemetry.addData("Status", "Initializing");
         telemetry.addData("Status", "Initialized");
-        telemetry.addData("Alliance Color", "Red");
+        telemetry.addData("Alliance Colour", "Red");
         telemetry.addData("Start Position", "0");
         telemetry.update();
 
-        Pose2d initialPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
+        Pose2d initialPose = new Pose2d(0, 0, Math.toRadians(90));
         drive = new MecanumDrive(hardwareMap, initialPose);
     }
 
@@ -28,19 +28,25 @@ public class MainAuto extends OpMode {
     public void init_loop() {
         if (gamepad1.bWasPressed()) {
             Globals.isRed = true;
-            telemetry.addData("Alliance Color", "Red");
         }
         if (gamepad1.xWasPressed()) {
             Globals.isRed = false;
-            telemetry.addData("Alliance Color", "Blue");
         }
         if (gamepad1.dpadUpWasPressed()) {
             Globals.startPosition = 0;
-            telemetry.addData("Start Position", "0");
         }
         if (gamepad1.dpadDownWasPressed()) {
             Globals.startPosition = 1;
+        }
+        if (Globals.startPosition == 0) {
+            telemetry.addData("Start Position", "0");
+        } else {
             telemetry.addData("Start Position", "1");
+        }
+        if (Globals.isRed) {
+            telemetry.addData("Alliance Colour", "Red");
+        } else {
+            telemetry.addData("Alliance Colour", "Blue");
         }
         telemetry.update();
     }
@@ -49,15 +55,15 @@ public class MainAuto extends OpMode {
     public void start() {
         if (Globals.startPosition == 0) {
             if (Globals.isRed) {
-                drive.localizer.setPose(new Pose2d(11.8, 61.7, Math.toRadians(90)));
+                drive.localizer.setPose(new Pose2d(0, 0, Math.toRadians(0)));
             } else {
-                drive.localizer.setPose(new Pose2d(11.8, -61.7, Math.toRadians(-90)));
+                drive.localizer.setPose(new Pose2d(0, 0, Math.toRadians(0)));
             }
         } else {
             if (Globals.isRed) {
-                drive.localizer.setPose(new Pose2d(-11.8, 61.7, Math.toRadians(90)));
+                drive.localizer.setPose(new Pose2d(62, 13, Math.toRadians(180)));
             } else {
-                drive.localizer.setPose(new Pose2d(-11.8, -61.7, Math.toRadians(-90)));
+                drive.localizer.setPose(new Pose2d(62, -13, Math.toRadians(180)));
             }
         }
     }
