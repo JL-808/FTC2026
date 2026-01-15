@@ -15,3 +15,15 @@
 - Motor Port 2: Lift Left Motor (Encoder)
 - Motor Port 3: Lift Right Motor (Encoder)
 - RS485: Control Hub
+## Controls
+### Driver 1
+- Left Stick Y-Axis: Forward/Backward Movement
+- Left Stick X-Axis: Left/Right Strafing
+- Right Stick X-Axis: Rotation
+- Left Trigger: Slow left Strafe
+- Right Trigger: Slow right Strafe
+### Driver 2
+- DPad Up: Lift Up
+- DPad Down: Lift Down
+- DPad Left: Intake In
+- Dpad Left: Intake Out
