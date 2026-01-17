@@ -7,6 +7,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Configurable
@@ -26,8 +27,8 @@ public class BallLaunch {
 
     public static int reloadTime = 500; // minimum time (ms) between launches
 
-    public static double servoStartPosition = 0.3;
-    public static double servoLaunchPosition = 0.7;
+    public static double servoStartPosition = 0.8;
+    public static double servoLaunchPosition = 0.5;
 
     public static double velocityTolerance = 40.0;
 
@@ -35,10 +36,15 @@ public class BallLaunch {
     private final DcMotorEx outtake;
     private final Servo launchServo;
 
+    public static double P = 10;
+    public static double I = 1;
+    public static double D = 0.1;
+    public static double F = 0;
+
     public BallLaunch(HardwareMap hardwareMap) {
         outtake = hardwareMap.get(DcMotorEx.class, "outtake");
-        outtake.setDirection(DcMotor.Direction.FORWARD);
-
+        outtake.setDirection(DcMotor.Direction.REVERSE);
+        outtake.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(P, I, D, F));
         outtake.setVelocity(0);
         outtake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -54,7 +60,7 @@ public class BallLaunch {
                 if (launchCount > 0 || forceLaunch) {
                     currentState = STATES.SPINNING_UP;
 
-                    outtake.setVelocity(velocity);
+                    outtake.setVelocity(-velocity);
                 }
                 break;
             case SPINNING_UP:
@@ -65,7 +71,7 @@ public class BallLaunch {
                     break;
                 }
 
-                if (Math.abs(outtake.getVelocity() - velocity) < velocityTolerance) {
+                if (Math.abs(outtake.getVelocity() - velocity) <= velocityTolerance) {
                     currentState = STATES.READY_TO_LAUNCH;
                 }
                 break;
@@ -73,8 +79,13 @@ public class BallLaunch {
                 if (launchCount == 0 && !forceLaunch) {
                     currentState = STATES.IDLE;
                     outtake.setVelocity(0);
-                }
 
+                    break;
+                }
+                if (Math.abs(outtake.getVelocity() - velocity) > velocityTolerance) {
+                    currentState = STATES.SPINNING_UP;
+                    break;
+                }
                 break;
             case LAUNCHING:
                 if (launchCount == 0 && !forceLaunch) {
@@ -87,7 +98,7 @@ public class BallLaunch {
                 if (launchTimer.getElapsedTime() > reloadTime) {
                     launchServo.setPosition(servoStartPosition);
                     if (launchCount > 0 || forceLaunch) {
-                        if (Math.abs(outtake.getVelocity() - velocity) < velocityTolerance) {
+                        if (Math.abs(outtake.getVelocity() - velocity) <= velocityTolerance) {
                             currentState = STATES.READY_TO_LAUNCH;
                         } else {
                             currentState = STATES.SPINNING_UP;
@@ -122,9 +133,9 @@ public class BallLaunch {
         velocity = targetVelocity;
 
         if (currentState == STATES.SPINNING_UP || currentState == STATES.READY_TO_LAUNCH || currentState == STATES.LAUNCHING) {
-            outtake.setVelocity(velocity);
+            outtake.setVelocity(-velocity);
 
-            if (Math.abs(outtake.getVelocity() - velocity) < velocityTolerance && currentState != STATES.LAUNCHING) {
+            if (Math.abs(outtake.getVelocity() - velocity) <= velocityTolerance && currentState != STATES.LAUNCHING) {
                 currentState = STATES.READY_TO_LAUNCH;
             } else if (currentState != STATES.LAUNCHING) {
                 currentState = STATES.SPINNING_UP;

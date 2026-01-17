@@ -13,12 +13,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.function.Supplier;
-@Configurable
+
 @TeleOp
+@Configurable
 public class MainTeleOp extends OpMode {
     private Follower follower;
     private boolean parking;
-    private Supplier<PathChain> pathChain;
+    private Supplier<PathChain> BlueParkingPathChain;
+    private Supplier<PathChain> RedParkingPathChain;
     private TelemetryManager telemetryM;
 
     private final ElapsedTime runtime = new ElapsedTime();
@@ -28,6 +30,7 @@ public class MainTeleOp extends OpMode {
     private Lift lift;
 
     private BallLaunch ballLaunch;
+    public static double ballVelocity = 2000;
 
     @Override
     public void init() {
@@ -36,11 +39,14 @@ public class MainTeleOp extends OpMode {
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        pathChain = () -> follower.pathBuilder()
+        RedParkingPathChain = () -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(31.9, 26.4))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(225), 0.8))
                 .build();
-
+        BlueParkingPathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, new Pose(111.9, 26.4))))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(315), 0.8))
+                .build();
         lift = new Lift(hardwareMap);
         ballLaunch = new BallLaunch(hardwareMap);
         intake = new Intake(hardwareMap);
@@ -49,6 +55,8 @@ public class MainTeleOp extends OpMode {
     public void start() {
         runtime.reset();
         follower.startTeleopDrive();
+
+        lift.setTargetTicks(Lift.minTicks);
     }
     @Override
     public void loop() {
@@ -65,7 +73,7 @@ public class MainTeleOp extends OpMode {
 
         if (gamepad1.dpadUpWasPressed()) {
             ballLaunch.forceLaunch = true;
-            ballLaunch.setTargetVelocity(2000); // TODO: Adjust velocity as needed
+            ballLaunch.setTargetVelocity(ballVelocity); // TODO: Adjust velocity as needed
         }
         if (gamepad1.dpadUpWasReleased()) {
             ballLaunch.forceLaunch = false;
@@ -113,7 +121,11 @@ public class MainTeleOp extends OpMode {
 
 
         if (gamepad1.yWasPressed()) {
-            follower.followPath(pathChain.get());
+            if (Globals.isRed) {
+                follower.followPath(RedParkingPathChain.get());
+            } else {
+                follower.followPath(BlueParkingPathChain.get());
+            }
             parking = true;
         }
 
@@ -123,14 +135,13 @@ public class MainTeleOp extends OpMode {
         }
 
 
-        telemetry.addData("Ball Launch State", ballLaunch.currentState);
+        telemetryM.debug("Ball Launch (State, target_vel, current_vel)", ballLaunch.currentState, ballLaunch.getTargetVelocity(), ballLaunch.getCurrentVelocity());
         telemetryM.debug("lift (target, left, right)", lift.getTargetTicks(), lift.getLeftTicks(), lift.getRightTicks());
 
-        telemetryM.debug("position", follower.getPose());
-        telemetryM.debug("heading", Math.toDegrees(follower.getHeading()));
-
-        telemetryM.debug("velocity", follower.getVelocity());
-
-        telemetry.update();
+        telemetryM.debug("x:" + follower.getPose().getX());
+        telemetryM.debug("y:" + follower.getPose().getY());
+        telemetryM.debug("heading:" + follower.getPose().getHeading());
+        telemetryM.debug("total heading:" + follower.getTotalHeading());
+        telemetryM.update(telemetry);
     }
 }

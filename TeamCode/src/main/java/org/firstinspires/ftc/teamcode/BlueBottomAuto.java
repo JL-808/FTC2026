@@ -4,13 +4,16 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
+import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-
+import java.util.function.Supplier;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-@Autonomous (name="Blue Bottom", group="Blue")
 
+@Autonomous (name="Blue Bottom", group="Blue")
 public class BlueBottomAuto extends OpMode {
     private final Pose startPose = new Pose(57, 9, Math.toRadians(-90));
     private final Pose launchPose = new Pose(63.300, 14.500, Math.toRadians(-157));
@@ -21,7 +24,8 @@ public class BlueBottomAuto extends OpMode {
         TO_INTAKE_1,
         INTAKE_1,
         TO_LAUNCH_1,
-        LAUNCH_1
+        LAUNCH_1,
+        END
 
     }
 
@@ -31,10 +35,12 @@ public class BlueBottomAuto extends OpMode {
     private BallLaunch ballLaunch;
     private Intake intake;
 
-    public PathChain ToInitialLaunch;
-    public PathChain ToIntake1;
-    public PathChain Intake1;
-    public PathChain ToLaunch1;
+    private PathChain ToInitialLaunch;
+    private PathChain ToIntake1;
+    private PathChain Intake1;
+    private PathChain ToLaunch1;
+    private Supplier<PathChain> EndPathChain;
+    private Timer opmodeTimer;
 
     public void buildPaths() {
         ToInitialLaunch = follower.pathBuilder().addPath(
@@ -77,6 +83,8 @@ public class BlueBottomAuto extends OpMode {
     public void init() {
         Globals.isRed = false;
 
+        opmodeTimer = new Timer();
+
         ballLaunch = new BallLaunch(hardwareMap);
         intake = new Intake(hardwareMap);
 
@@ -84,6 +92,10 @@ public class BlueBottomAuto extends OpMode {
         follower.setStartingPose(startPose);
 
         buildPaths();
+        EndPathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, new Pose(31.9, 26.4))))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(225), 0.8))
+                .build();
     }
 
     @Override
@@ -92,7 +104,7 @@ public class BlueBottomAuto extends OpMode {
 
     @Override
     public void start() {
-
+        opmodeTimer.resetTimer();
     }
 
     private void update() {
@@ -133,8 +145,6 @@ public class BlueBottomAuto extends OpMode {
 
                     ballLaunch.setTargetVelocity(2000); // TODO
                     ballLaunch.launchCount = 3;
-
-                    // next state
                 }
                 break;
             case TO_LAUNCH_1:
@@ -144,7 +154,8 @@ public class BlueBottomAuto extends OpMode {
                 break;
             case LAUNCH_1:
                 if (ballLaunch.currentState == BallLaunch.STATES.IDLE) {
-                    // end of autonomous
+                    currentState = STATES.END;
+                    follower.followPath(EndPathChain.get());
                 } else {
                     ballLaunch.launch(); // continuously try launching
                 }
@@ -155,6 +166,11 @@ public class BlueBottomAuto extends OpMode {
     @Override
     public void loop() {
         follower.update();
+        if (opmodeTimer.getElapsedTime() >= 25000 && currentState != STATES.END) {
+            currentState = STATES.END;
+            follower.followPath(EndPathChain.get());
+        }
+
         update();
 
         ballLaunch.update();
