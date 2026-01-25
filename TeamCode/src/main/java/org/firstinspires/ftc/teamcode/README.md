@@ -1,7 +1,3 @@
-# MainTeleOp
-This is the main teleoperated (TeleOp) program for our FTC robot.
-# BlueBottomAuto
-This is the autonomous program for the blue alliance starting at the bottom side.
 # Lift
 Manages the lift mechanism of the robot for use during parking.
 ## Methods
@@ -12,6 +8,7 @@ Manages the lift mechanism of the robot for use during parking.
 - `setTargetTicks(int ticks)`: Sets the target position of the lift in ticks.
 - `getLiftTicks()`: Returns the current position of the left lift motor in ticks.
 - `getRightTicks()`: Returns the current position of the right lift motor in ticks.
+- `reset()`: Resets PIDs.
 ## Constants
 - `posP`, `posI`, `posD` - PID coefficients for lift position control.
 - `syncP`, `syncI`, `syncD` - PID coefficients for synchronizing left and right lift motors.
@@ -25,13 +22,17 @@ Manages the ball launching mechanism of the robot.
 ## Methods
 - `update()`: Update method to be called in the main loop.
 - `launch()`: Tries to launch a ball. Return true if successful.
+- `getVelocity()`: Returns current motor velocity.
 - `getTargetVelocity()`: Returns the target velocity for the outtake motor.
 - `setTargetVelocity(double velocity)`: Sets the target velocity for the outtake motor.
+- `reset()`: Resets PIDs.
 ## Important Variables
 - `launchCount` - Number of balls to be launched.
 - `forceLaunch` - If true, outtake will begin spinning up and prepare for launching regardless of `launchCount`.
 ## Constants
+- `P`, `I`, `D`, `F` - PIDF coefficients for outtake motor velocity control.
 - `reloadTime` - Time in milliseconds required between launches.
+- `servoTime` - Time in milliseconds for the launch servo to complete its motion (up or down).
 - `servoStartPosition` - Starting position of the launch servo.
 - `servoLaunchPosition` - Ending position of the launch servo.
 - `velocityTolerance` - Acceptable error margin for outtake motor velocity.

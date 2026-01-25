@@ -8,10 +8,13 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
+
 import java.util.function.Supplier;
 
 @TeleOp
@@ -21,6 +24,7 @@ public class MainTeleOp extends OpMode {
     private boolean parking;
     private Supplier<PathChain> BlueParkingPathChain;
     private Supplier<PathChain> RedParkingPathChain;
+    private Supplier<PathChain> SpinToLaunchPathChain;
     private TelemetryManager telemetryM;
 
     private final ElapsedTime runtime = new ElapsedTime();
@@ -47,9 +51,17 @@ public class MainTeleOp extends OpMode {
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(111.9, 26.4))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(315), 0.8))
                 .build();
+        SpinToLaunchPathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, follower::getPose)))
+                .setLinearHeadingInterpolation(follower.getHeading(), LaunchCalculator.heading(follower.getPose().getX(), follower.getPose().getY(), Globals.isRed))
+                .build();
         lift = new Lift(hardwareMap);
         ballLaunch = new BallLaunch(hardwareMap);
         intake = new Intake(hardwareMap);
+
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
     }
     @Override
     public void start() {
@@ -61,7 +73,6 @@ public class MainTeleOp extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        telemetryM.update();
 
         if (gamepad2.dpad_up && !gamepad2.dpad_down) {
             lift.up();
@@ -71,11 +82,10 @@ public class MainTeleOp extends OpMode {
 
         lift.update();
 
-        if (gamepad1.dpadUpWasPressed()) {
+        if (gamepad1.dpad_up || gamepad2.x) {
             ballLaunch.forceLaunch = true;
-            ballLaunch.setTargetVelocity(ballVelocity); // TODO: Adjust velocity as needed
-        }
-        if (gamepad1.dpadUpWasReleased()) {
+            ballLaunch.setTargetVelocity(ballVelocity);
+        } else {
             ballLaunch.forceLaunch = false;
         }
 
@@ -83,6 +93,13 @@ public class MainTeleOp extends OpMode {
 
         if (gamepad1.a) {
             ballLaunch.launch();
+        }
+
+        double multiplier;
+        if (gamepad1.left_bumper) {
+            multiplier = 0.5;
+        } else {
+            multiplier = 1;
         }
 
         if (!parking) {
@@ -103,45 +120,55 @@ public class MainTeleOp extends OpMode {
                 );
             } else { // Both triggers are pressed, normal driving
                 follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        -gamepad1.right_stick_x,
+                        -gamepad1.left_stick_y * multiplier,
+                        -gamepad1.left_stick_x * multiplier * 0.1,
+                        -gamepad1.right_stick_x * multiplier,
                         true
                 );
             }
         }
 
-        if (gamepad2.dpad_right) {
+        if (gamepad2.right_bumper && !gamepad2.left_bumper) {
             intake.pushOut();
-        } else if (gamepad2.dpad_left) {
+        } else if (gamepad2.left_bumper && !gamepad2.right_bumper) {
             intake.pullIn();
         } else {
             intake.stop();
         }
 
 
-        if (gamepad1.yWasPressed()) {
-            if (Globals.isRed) {
-                follower.followPath(RedParkingPathChain.get());
-            } else {
-                follower.followPath(BlueParkingPathChain.get());
-            }
-            parking = true;
-        }
+//        if (gamepad1.yWasPressed()) {
+//            if (Globals.isRed) {
+//                follower.followPath(RedParkingPathChain.get());
+//            } else {
+//                follower.followPath(BlueParkingPathChain.get());
+//            }
+//            parking = true;
+//        }
 
-        if (parking && (gamepad1.xWasPressed() || !follower.isBusy())) {
+        if (gamepad1.rightBumperWasPressed()) {
+            follower.followPath(SpinToLaunchPathChain.get());
+        }
+        if (gamepad1.rightBumperWasReleased()) {
             follower.startTeleopDrive();
-            parking = false;
         }
 
+//
+//        if (parking && (gamepad1.xWasPressed() || !follower.isBusy())) {
+//            follower.startTeleopDrive();
+//            parking = false;
+//        }
 
-        telemetryM.debug("Ball Launch (State, target_vel, current_vel)", ballLaunch.currentState, ballLaunch.getTargetVelocity(), ballLaunch.getCurrentVelocity());
+        telemetryM.addLine("---- Robot Position ----");
+        telemetryM.addData("X", follower.getPose().getX());
+        telemetryM.addData("Y", follower.getPose().getY());
+        telemetryM.addData("heading", follower.getPose().getHeading());
+        telemetryM.addLine("");
+        telemetryM.addLine("---- Robot Status ----");
+        telemetryM.debug("Ball Launch (state, target_vel, current_vel)", ballLaunch.currentState, ballLaunch.getTargetVelocity(), ballLaunch.getVelocity());
         telemetryM.debug("lift (target, left, right)", lift.getTargetTicks(), lift.getLeftTicks(), lift.getRightTicks());
 
-        telemetryM.debug("x:" + follower.getPose().getX());
-        telemetryM.debug("y:" + follower.getPose().getY());
-        telemetryM.debug("heading:" + follower.getPose().getHeading());
-        telemetryM.debug("total heading:" + follower.getTotalHeading());
+        //telemetryM.debug("total heading:" + follower.getTotalHeading());
         telemetryM.update(telemetry);
     }
 }

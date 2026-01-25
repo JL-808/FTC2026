@@ -23,7 +23,7 @@ public class Lift {
     public static int downIncrement = 6;
     public static int maxTicks = 2000;
     public static int minTicks = -60;
-    private final PIDController posPID  = new PIDController(posP, posI, posD);
+    private final PIDController posPID = new PIDController(posP, posI, posD);
     private final PIDController syncPID = new PIDController(syncP, syncI, syncD);
 
     private int targetTicks = 0;

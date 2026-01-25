@@ -22,8 +22,13 @@
 - Right Stick X-Axis: Rotation
 - Left Trigger: Slow left Strafe
 - Right Trigger: Slow right Strafe
+- Left Bumper: Slow mode
+- Right Bumper: Auto-align launch
+- DPad Up: Spin up outtake
+- A: Launch ball
 ### Driver 2
 - DPad Up: Lift Up
 - DPad Down: Lift Down
-- DPad Left: Intake In
-- Dpad Left: Intake Out
+- Left Bumper: Intake In
+- Right Bumper: Intake Out
+- X: Spin up outtake

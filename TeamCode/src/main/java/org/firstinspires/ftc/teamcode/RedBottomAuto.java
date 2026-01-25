@@ -9,15 +9,16 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import java.util.function.Supplier;
+
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
 
+import java.util.function.Supplier;
+
 @Autonomous (name="Blue Bottom", group="Blue")
-public class BlueBottomAuto extends OpMode {
-    private final Pose startPose = new Pose(56.000, 9, Math.toRadians(-90));
-    private final Pose launchPose1 = new Pose(61.000, 25.000, LaunchCalculator.heading(61.000, 25.000, false));
-    private final Pose launchPose2 = new Pose(61.000, 84.000, LaunchCalculator.heading(61.000, 84.000, false));
+public class RedBottomAuto extends OpMode {
+    private final Pose startPose = new Pose(88, 9, Math.toRadians(90));
+    private final Pose launchPose = new Pose(83.000, 25.000, LaunchCalculator.heading(83.000, 25.000, true));
     public enum STATES {
         INIT,
         TO_INITIAL_LAUNCH,
@@ -55,77 +56,77 @@ public class BlueBottomAuto extends OpMode {
         ToInitialLaunch = follower.pathBuilder().addPath(
                         new BezierLine(
                                 startPose,
-                                launchPose1
+                                launchPose
                         )
-                ).setLinearHeadingInterpolation(startPose.getHeading(), launchPose1.getHeading())
+                ).setLinearHeadingInterpolation(startPose.getHeading(), launchPose.getHeading())
                 .build();
 
         ToIntake1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                launchPose1,
-                                new Pose(launchPose1.getX(), Globals.FIRST_ROW_ARTIFACTS),
-                                new Pose(Globals.BEGIN_INTAKE, Globals.FIRST_ROW_ARTIFACTS)
+                                launchPose,
+                                new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
+                                new Pose(144 - Globals.BEGIN_INTAKE, Globals.SECOND_ROW_ARTIFACTS)
                         )
-                ).setLinearHeadingInterpolation(launchPose1.getHeading(), Math.toRadians(180))
+                ).setLinearHeadingInterpolation(launchPose.getHeading(), Math.toRadians(0))
                 .setNoDeceleration()
                 .build();
 
         Intake1 = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(Globals.BEGIN_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
-                                new Pose(Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS)
+                                new Pose(144 - Globals.BEGIN_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
+                                new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(180))
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
         ToLaunch1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
-                                //new Pose(launchPose1.getX(), Globals.FIRST_ROW_ARTIFACTS),
-                                launchPose1
+                                new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
+                                //new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
+                                launchPose
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(180), launchPose1.getHeading())
+                ).setLinearHeadingInterpolation(Math.toRadians(0), launchPose.getHeading())
                 .build();
 
         ToIntake2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                launchPose1,
-                                new Pose(launchPose1.getX(), Globals.SECOND_ROW_ARTIFACTS),
-                                new Pose(Globals.BEGIN_INTAKE, Globals.SECOND_ROW_ARTIFACTS)
+                                launchPose,
+                                new Pose(launchPose.getX(), Globals.FIRST_ROW_ARTIFACTS),
+                                new Pose(144 - Globals.BEGIN_INTAKE, Globals.FIRST_ROW_ARTIFACTS)
                         )
-                ).setLinearHeadingInterpolation(launchPose1.getHeading(), Math.toRadians(180))
+                ).setLinearHeadingInterpolation(launchPose.getHeading(), Math.toRadians(0))
                 .setNoDeceleration()
                 .build();
 
         Intake2 = follower.pathBuilder().addPath(
                 new BezierLine(
-                        new Pose(Globals.BEGIN_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
-                        new Pose(Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS)
+                        new Pose(144 - Globals.BEGIN_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
+                        new Pose(144 - Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS)
                 )
-                ).setConstantHeadingInterpolation(Math.toRadians(180))
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
         ToLaunch2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
-                                //new Pose(launchPose2.getX(), Globals.SECOND_ROW_ARTIFACTS),
-                                launchPose2
+                                new Pose(144 - Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
+                                //new Pose(launchPose.getX(), Globals.FIRST_ROW_ARTIFACTS),
+                                launchPose
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(180), launchPose2.getHeading())
+                ).setLinearHeadingInterpolation(Math.toRadians(0), launchPose.getHeading())
                 .build();
 
         EndPathChain = () -> follower.pathBuilder().addPath(
                         new Path(new BezierLine(
                                 follower.getPose(),
-                                new Pose(48.000, 72.000)
+                                new Pose(96.000, 72.000)
                         ))
-                ).setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(180))
+                ).setLinearHeadingInterpolation(follower.getHeading(), Math.toRadians(0))
                 .build();
     }
 
     @Override
     public void init() {
-        Globals.isRed = false;
+        Globals.isRed = true;
 
         opmodeTimer = new Timer();
 
