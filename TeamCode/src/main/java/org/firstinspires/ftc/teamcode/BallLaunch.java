@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 @Configurable
 public class BallLaunch {
@@ -39,7 +40,7 @@ public class BallLaunch {
     private final DcMotorEx outtake;
     private final VoltageSensor batteryVoltageSensor;
     private final Servo launchServo;
-
+    private Gamepad gamepad1;
     public static double P = 0;
     public static double I = 0;
     public static double D = 0;
@@ -49,13 +50,13 @@ public class BallLaunch {
 
     private double v;
 
-    public BallLaunch(HardwareMap hardwareMap) {
+    public BallLaunch(HardwareMap hardwareMap, Gamepad Gamepad1) {
         outtake = hardwareMap.get(DcMotorEx.class, "outtake");
         outtake.setDirection(DcMotor.Direction.REVERSE);
 
         launchServo = hardwareMap.get(Servo.class, "launch");
         launchServo.setDirection(Servo.Direction.REVERSE);
-
+        gamepad1 = Gamepad1;
         launchServo.setPosition(servoStartPosition);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
@@ -85,7 +86,7 @@ public class BallLaunch {
                 break;
             case READY_TO_LAUNCH:
                 motor_update();
-
+                gamepad1.rumble(1000); // rumble for a second
                 if (launchCount == 0 && !forceLaunch) {
                     currentState = STATES.IDLE;
                     outtake.setPower(0);
