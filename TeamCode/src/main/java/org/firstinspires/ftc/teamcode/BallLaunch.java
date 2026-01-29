@@ -40,7 +40,7 @@ public class BallLaunch {
     private final DcMotorEx outtake;
     private final VoltageSensor batteryVoltageSensor;
     private final Servo launchServo;
-    private Gamepad gamepad1;
+    private final Gamepad gamepad1;
     public static double P = 0;
     public static double I = 0;
     public static double D = 0;
