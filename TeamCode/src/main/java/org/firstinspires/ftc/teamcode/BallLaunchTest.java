@@ -22,7 +22,7 @@ public class BallLaunchTest extends OpMode {
 
     @Override
     public void init() {
-        ballLaunch = new BallLaunch(hardwareMap);
+        ballLaunch = new BallLaunch(hardwareMap, gamepad1);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
