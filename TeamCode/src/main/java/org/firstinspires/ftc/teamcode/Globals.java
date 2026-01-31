@@ -10,16 +10,16 @@ public class Globals {
 
     public static boolean isRed;
 
-    public static final double FIRST_ROW_ARTIFACTS = 36;
-    public static final double SECOND_ROW_ARTIFACTS = 60;
-    public static final double THIRD_ROW_ARTIFACTS = 84;
+    public static double FIRST_ROW_ARTIFACTS = 36.5;
+    public static double SECOND_ROW_ARTIFACTS = 60.5;
+    public static double THIRD_ROW_ARTIFACTS = 86;
 
-    public static final double BEGIN_INTAKE = 45; // inches from wall to begin intake
-    public static final double FIRST_ROW_STOP_INTAKE = 9; // inches from wall to stop intake
-    public static final double SECOND_ROW_STOP_INTAKE = 10;
+    public static double BEGIN_INTAKE = 57; // inches from wall to begin intake
+    public static double FIRST_ROW_STOP_INTAKE = 9.1; // inches from wall to stop intake
+    public static double SECOND_ROW_STOP_INTAKE = 9.1;
 
-    public static final double THIRD_ROW_STOP_INTAKE = 16;
+    public static double THIRD_ROW_STOP_INTAKE = 16;
 
-    public static final double FAR_LAUNCH_VELOCITY = 2080;
-    public static final double SHORT_LAUNCH_VELOCITY = 2000;
+    public static double FAR_LAUNCH_VELOCITY = 2100;
+    public static double SHORT_LAUNCH_VELOCITY = 1760;
 }

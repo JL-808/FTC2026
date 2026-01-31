@@ -11,11 +11,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
 
 import java.util.function.Supplier;
 
-@Autonomous (name="Blue Bottom", group="Blue")
+@Autonomous (name="Red Bottom", group="Red")
 public class RedBottomAuto extends OpMode {
     private final Pose startPose = new Pose(88, 9, Math.toRadians(90));
     private final Pose launchPose = new Pose(83.000, 25.000, LaunchCalculator.heading(83.000, 25.000, true));
@@ -82,7 +81,7 @@ public class RedBottomAuto extends OpMode {
         ToLaunch1 = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
-                                //new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
+                                new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
                                 launchPose
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(0), launchPose.getHeading())
@@ -109,7 +108,7 @@ public class RedBottomAuto extends OpMode {
         ToLaunch2 = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(144 - Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
-                                //new Pose(launchPose.getX(), Globals.FIRST_ROW_ARTIFACTS),
+                                new Pose(launchPose.getX(), Globals.FIRST_ROW_ARTIFACTS),
                                 launchPose
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(0), launchPose.getHeading())

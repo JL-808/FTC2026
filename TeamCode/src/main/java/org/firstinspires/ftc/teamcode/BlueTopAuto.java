@@ -11,11 +11,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
 
 import java.util.function.Supplier;
 
-@Autonomous (name="Blue Bottom", group="Blue")
+@Autonomous (name="Blue Top", group="Blue")
 public class BlueTopAuto extends OpMode {
     private final Pose startPose = new Pose(27, 130, Math.toRadians(324));
     private final Pose launchPose = new Pose(61, 84, LaunchCalculator.heading(61.000, 84, false));
@@ -80,7 +79,7 @@ public class BlueTopAuto extends OpMode {
                 .build();
 
         ToLaunch1 = follower.pathBuilder().addPath(
-                        new BezierCurve(
+                        new BezierLine(
                                 new Pose(Globals.THIRD_ROW_STOP_INTAKE, Globals.THIRD_ROW_ARTIFACTS),
                                 //new Pose(launchPose.getX(), Globals.THIRD_ROW_ARTIFACTS),
                                 launchPose
@@ -107,7 +106,7 @@ public class BlueTopAuto extends OpMode {
                 .build();
 
         ToLaunch2 = follower.pathBuilder().addPath(
-                        new BezierCurve(
+                        new BezierLine(
                                 new Pose(Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
                                 //new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
                                 launchPose

@@ -11,11 +11,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
 
 import java.util.function.Supplier;
 
-@Autonomous (name="Blue Bottom", group="Blue")
+@Autonomous (name="Red Top", group="Red")
 public class RedTopAuto extends OpMode {
     private final Pose startPose = new Pose(117, 130, Math.toRadians(-324));
     private final Pose launchPose = new Pose(83, 84, LaunchCalculator.heading(83, 84, true));
@@ -64,7 +63,7 @@ public class RedTopAuto extends OpMode {
         ToIntake1 = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 launchPose,
-                                //new Pose(launchPose.getX(), Globals.THIRD_ROW_ARTIFACTS),
+                                new Pose(launchPose.getX(), Globals.THIRD_ROW_ARTIFACTS),
                                 new Pose(144 - Globals.BEGIN_INTAKE, Globals.THIRD_ROW_ARTIFACTS)
                         )
                 ).setLinearHeadingInterpolation(launchPose.getHeading(), Math.toRadians(0))
@@ -82,7 +81,7 @@ public class RedTopAuto extends OpMode {
         ToLaunch1 = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(144 - Globals.THIRD_ROW_STOP_INTAKE, Globals.THIRD_ROW_ARTIFACTS),
-                                //new Pose(launchPose.getX(), Globals.THIRD_ROW_ARTIFACTS),
+                                new Pose(launchPose.getX(), Globals.THIRD_ROW_ARTIFACTS),
                                 launchPose
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(0), launchPose.getHeading())
@@ -109,7 +108,7 @@ public class RedTopAuto extends OpMode {
         ToLaunch2 = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
-                                //new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
+                                new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
                                 launchPose
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), launchPose.getHeading())

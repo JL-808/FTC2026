@@ -33,17 +33,17 @@ public class BallLaunch {
     public static double servoStartPosition = 0.83;
     public static double servoLaunchPosition = 0.5;
 
-    public static double velocityTolerance = 60;
+    public static double velocityTolerance = 20;
 
     private final Timer launchTimer = new Timer();
     private final DcMotorEx outtake;
     private final VoltageSensor batteryVoltageSensor;
     private final Servo launchServo;
 
-    public static double P = 0;
+    public static double P = 0.015;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 10;
+    public static double F = 0.000495;
 
     private final PIDController PID = new PIDController(P, I, D);
 
