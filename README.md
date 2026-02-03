@@ -1,8 +1,13 @@
 # FTC Team 22689
+## Autos
+### Blue Alliance Bottom
+### Blue Alliance Top
+### Red Alliance Bottom
+### Red Alliance Top
 ## Connections
 ### Control Hub
 - Motor Port 0: Front Left Motor
-- Motor Port 1: Front Right Motor
+  - Motor Port 1: Front Right Motor`
 - Motor Port 2: Back Left Motor
 - Motor Port 3: Back Right Motor
 - Servo Port 0: Launch Servo

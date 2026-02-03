@@ -33,7 +33,6 @@ public class MainTeleOp extends OpMode {
 
     private BallLaunch ballLaunch;
     public static double ballVelocity = 2000;
-    public ElapsedTime CurrentTimePassed;
 
     @Override
     public void init() {
@@ -52,9 +51,8 @@ public class MainTeleOp extends OpMode {
                 .build();
 
         lift = new Lift(hardwareMap);
-        ballLaunch = new BallLaunch(hardwareMap, gamepad1);
+        ballLaunch = new BallLaunch(hardwareMap);
         intake = new Intake(hardwareMap);
-        CurrentTimePassed = new ElapsedTime();
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
@@ -85,10 +83,11 @@ public class MainTeleOp extends OpMode {
             ballLaunch.forceLaunch = false;
         }
 
+        ballLaunch.unjam = gamepad2.y;
         ballLaunch.update();
 
 
-        if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH) {
+        if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH || ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
             gamepad1.rumble(50);
         }
 
@@ -129,10 +128,6 @@ public class MainTeleOp extends OpMode {
             }
         }
 
-        if (CurrentTimePassed.seconds() > 160){
-            gamepad1.rumble(2000);
-            gamepad2.rumble(2000);
-        }
 
         if (gamepad2.right_bumper && !gamepad2.left_bumper) {
             intake.pushOut();

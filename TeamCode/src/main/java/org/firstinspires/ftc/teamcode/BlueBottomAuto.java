@@ -123,7 +123,6 @@ public class BlueBottomAuto extends OpMode {
     @Override
     public void init() {
         Globals.isRed = false;
-
         opmodeTimer = new Timer();
 
         ballLaunch = new BallLaunch(hardwareMap);
@@ -167,7 +166,9 @@ public class BlueBottomAuto extends OpMode {
                     follower.followPath(ToIntake1);
                     currentState = STATES.TO_INTAKE_1;
                 } else {
-                    ballLaunch.launch(); // continuously try launching
+                    if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
+                        ballLaunch.launch();
+                    }
                 }
                 if (ballLaunch.currentState == BallLaunch.STATES.LAUNCHING) {
                     intake.pullIn();
@@ -177,7 +178,7 @@ public class BlueBottomAuto extends OpMode {
                 break;
             case TO_INTAKE_1:
                 if (!follower.isBusy()) {
-                    follower.followPath(Intake1, 0.4, true);
+                    follower.followPath(Intake1, Globals.INTAKE_DRIVE_POWER, true);
                     currentState = STATES.INTAKE_1;
                     intake.pullIn();
                 }
@@ -202,7 +203,9 @@ public class BlueBottomAuto extends OpMode {
                     currentState = STATES.TO_INTAKE_2;
                     follower.followPath(ToIntake2);
                 } else {
-                    ballLaunch.launch(); // continuously try launching
+                    if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
+                        ballLaunch.launch();
+                    }
                 }
                 if (ballLaunch.currentState == BallLaunch.STATES.LAUNCHING) {
                     intake.pullIn();
@@ -212,7 +215,7 @@ public class BlueBottomAuto extends OpMode {
                 break;
             case TO_INTAKE_2:
                 if (!follower.isBusy()) {
-                    follower.followPath(Intake2, 0.4, true);
+                    follower.followPath(Intake2, Globals.INTAKE_DRIVE_POWER, true);
                     currentState = STATES.INTAKE_2;
                     intake.pullIn();
                 }
@@ -251,7 +254,7 @@ public class BlueBottomAuto extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        if (opmodeTimer.getElapsedTime() >= 25000 && currentState != STATES.END) {
+        if (opmodeTimer.getElapsedTime() >= Globals.END_TIME * 1000 && currentState != STATES.END) {
             currentState = STATES.END;
             intake.stop();
             follower.followPath(EndPathChain.get());
@@ -264,6 +267,7 @@ public class BlueBottomAuto extends OpMode {
 
 
         telemetry.addData("ball launch", ballLaunch.currentState);
+        telemetry.addData("ball launch velocity", ballLaunch.getVelocity());
         telemetry.addData("launch count", ballLaunch.launchCount);
         telemetry.addData("STATE", currentState);
         telemetry.addData("x", follower.getPose().getX());

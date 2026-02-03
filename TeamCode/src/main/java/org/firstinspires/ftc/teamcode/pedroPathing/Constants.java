@@ -40,7 +40,7 @@ public class Constants {
             .useVoltageCompensation(true)
             .useBrakeModeInTeleOp(true);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.55, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 0.6, 1);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(1.05)

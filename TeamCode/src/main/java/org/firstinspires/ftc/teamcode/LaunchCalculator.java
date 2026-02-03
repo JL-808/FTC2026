@@ -6,7 +6,7 @@ import java.lang.Math;
 @Configurable
 public class LaunchCalculator {
     public static double launchOffset = 6.25;
-    public static double offsetDegrees = 0;
+    public static double offsetDegrees = 4.0;
     public static double heading(double x, double y, boolean isRed) {
         // https://www.desmos.com/calculator/kzbkneoyfr
 
@@ -21,6 +21,8 @@ public class LaunchCalculator {
             m = Math.acos(launchOffset / d);
             n = Math.atan2(144 - y, 144 - x);
 
+            return Math.PI - m + n + 4/180*Math.PI;
+
         } else {
             double d = Math.sqrt(Math.pow(-x, 2) + Math.pow(144 - y, 2));
             if (d <= launchOffset) {
@@ -29,7 +31,8 @@ public class LaunchCalculator {
             m = Math.acos(launchOffset / d);
             n = Math.atan2(144 - y, -x);
 
+            return Math.PI - m + n + 2/180*Math.PI;
+
         }
-        return Math.PI - m + n + offsetDegrees/180*Math.PI;
     }
 }
