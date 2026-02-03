@@ -3,16 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-
+@Disabled
 @Configurable
 @TeleOp(name = "Ball Launch Test", group = "Main")
 public class BallLaunchTest extends OpMode {
@@ -27,7 +23,7 @@ public class BallLaunchTest extends OpMode {
 
     @Override
     public void init() {
-        ballLaunch = new BallLaunch(hardwareMap, gamepad1);
+        ballLaunch = new BallLaunch(hardwareMap);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 

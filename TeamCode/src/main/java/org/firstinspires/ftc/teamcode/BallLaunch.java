@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 @Configurable
 public class BallLaunch {
@@ -17,11 +16,12 @@ public class BallLaunch {
         IDLE,
         SPINNING_UP, // outtake is spinning up to velocity
         READY_TO_LAUNCH, // outtake is at velocity and ready to launch using launch()
+        READY_TO_LAUNCH_WAITED, // outtake is at velocity for a short time and ready to launch
         LAUNCHING, // currently launching a ball (busy)
         SERVO_DOWN, // servo is returning to start position
         RELOADING, // waiting for reload time before next launch
     }
-
+    public boolean unjam = false;
     public STATES currentState = STATES.IDLE;
 
     public int launchCount = 0;
@@ -30,33 +30,33 @@ public class BallLaunch {
 
     public static int reloadTime = 200; // minimum time (ms) between launches
     public static int servoTime = 200; // time (ms) for servo to move to launch position
-
+    public static int extraWaitTime = 100; // extra time (ms) to wait at target velocity before launching
     public static double servoStartPosition = 0.83;
     public static double servoLaunchPosition = 0.5;
 
-    public static double velocityTolerance = 60;
+    public static double velocityTolerance = 20;
 
     private final Timer launchTimer = new Timer();
     private final DcMotorEx outtake;
     private final VoltageSensor batteryVoltageSensor;
     private final Servo launchServo;
-    private Gamepad gamepad1;
-    public static double P = 0;
+
+    public static double P = 0.015;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 10;
+    public static double F = 0.000495;
 
     private final PIDController PID = new PIDController(P, I, D);
 
     private double v;
 
-    public BallLaunch(HardwareMap hardwareMap, Gamepad Gamepad1) {
+    public BallLaunch(HardwareMap hardwareMap) {
         outtake = hardwareMap.get(DcMotorEx.class, "outtake");
         outtake.setDirection(DcMotor.Direction.REVERSE);
 
         launchServo = hardwareMap.get(Servo.class, "launch");
         launchServo.setDirection(Servo.Direction.REVERSE);
-        gamepad1 = Gamepad1;
+
         launchServo.setPosition(servoStartPosition);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
@@ -66,6 +66,7 @@ public class BallLaunch {
         v =  outtake.getVelocity();
         switch (currentState) {
             case IDLE:
+                outtake.setPower(0);
                 if (launchCount > 0 || forceLaunch) {
                     currentState = STATES.SPINNING_UP;
                     reset();
@@ -82,11 +83,28 @@ public class BallLaunch {
 
                 if (Math.abs(v - velocity) <= velocityTolerance) {
                     currentState = STATES.READY_TO_LAUNCH;
+                    launchTimer.resetTimer();
                 }
                 break;
             case READY_TO_LAUNCH:
                 motor_update();
-                gamepad1.rumble(1000); // rumble for a second
+
+                if (launchCount == 0 && !forceLaunch) {
+                    currentState = STATES.IDLE;
+                    outtake.setPower(0);
+                    break;
+                }
+                if (Math.abs(v - velocity) > velocityTolerance) {
+                    currentState = STATES.SPINNING_UP;
+                    break;
+                }
+                if (launchTimer.getElapsedTime() > extraWaitTime) {
+                    currentState = STATES.READY_TO_LAUNCH_WAITED;
+                }
+                break;
+            case READY_TO_LAUNCH_WAITED:
+                motor_update();
+
                 if (launchCount == 0 && !forceLaunch) {
                     currentState = STATES.IDLE;
                     outtake.setPower(0);
@@ -136,6 +154,7 @@ public class BallLaunch {
                     if (launchCount > 0 || forceLaunch) {
                         if (Math.abs(v - velocity) <= velocityTolerance) {
                             currentState = STATES.READY_TO_LAUNCH;
+                            launchTimer.resetTimer();
 
                         } else {
                             currentState = STATES.SPINNING_UP;
@@ -147,6 +166,9 @@ public class BallLaunch {
                 }
                 break;
         }
+        if (unjam) {
+            outtake.setPower(1);
+        }
     }
     public void reset() {
         PID.reset();
@@ -155,7 +177,7 @@ public class BallLaunch {
     public boolean launch() {
         // Returns true if launch initiated
 
-        if (currentState == STATES.READY_TO_LAUNCH && (forceLaunch || launchCount > 0)) {
+        if ((currentState == STATES.READY_TO_LAUNCH || currentState == STATES.READY_TO_LAUNCH_WAITED) && (forceLaunch || launchCount > 0)) {
             currentState = STATES.LAUNCHING;
             launchServo.setPosition(servoLaunchPosition);
             launchTimer.resetTimer();
@@ -170,10 +192,14 @@ public class BallLaunch {
     }
 
     private void motor_update() {
-        double e = PID.update(velocity - v) + F * (12/batteryVoltageSensor.getVoltage()) * velocity;
-        if (e > 1) e = 1;
-        if (e < -1) e = -1;
-        outtake.setPower(-e);
+        if (unjam) {
+            outtake.setPower(1);
+        } else {
+            double e = PID.update(velocity - v) + F * (12/batteryVoltageSensor.getVoltage()) * velocity;
+            if (e > 1) e = 1;
+            if (e < -1) e = -1;
+            outtake.setPower(-e);
+        }
     }
 
     public double getVelocity() {
@@ -185,7 +211,7 @@ public class BallLaunch {
         }
         velocity = targetVelocity;
 
-        if (currentState == STATES.READY_TO_LAUNCH) {
+        if (currentState == STATES.READY_TO_LAUNCH || currentState == STATES.READY_TO_LAUNCH_WAITED) {
             if (Math.abs(v - velocity) > velocityTolerance) {
                 currentState = STATES.SPINNING_UP;
             }
@@ -195,4 +221,5 @@ public class BallLaunch {
     public double getTargetVelocity() {
         return velocity;
     }
+
 }

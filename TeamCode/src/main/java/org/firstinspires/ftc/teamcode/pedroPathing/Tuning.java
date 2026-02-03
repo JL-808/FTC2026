@@ -25,6 +25,8 @@ import com.pedropathing.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Lift;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,8 +130,11 @@ public class Tuning extends SelectableOpMode {
  * @version 1.0, 5/6/2024
  */
 class LocalizationTest extends OpMode {
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72,72));
     }
 
@@ -155,6 +160,7 @@ class LocalizationTest extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
 
@@ -184,8 +190,11 @@ class LocalizationTest extends OpMode {
 class ForwardTuner extends OpMode {
     public static double DISTANCE = 48;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72,72));
         follower.update();
         drawOnlyCurrent();
@@ -205,6 +214,7 @@ class ForwardTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
 
         telemetryM.debug("Distance Moved: " + (follower.getPose().getX() - 72));
@@ -232,8 +242,11 @@ class ForwardTuner extends OpMode {
 class LateralTuner extends OpMode {
     public static double DISTANCE = 48;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72,72));
         follower.update();
         drawOnlyCurrent();
@@ -253,6 +266,7 @@ class LateralTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
 
         telemetryM.debug("Distance Moved: " + (follower.getPose().getY() - 72));
@@ -280,8 +294,11 @@ class LateralTuner extends OpMode {
 class TurnTuner extends OpMode {
     public static double ANGLE = 2 * Math.PI;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72,72));
         follower.update();
         drawOnlyCurrent();
@@ -302,6 +319,7 @@ class TurnTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
 
         telemetryM.debug("Total Angle: " + follower.getTotalHeading());
@@ -335,8 +353,11 @@ class ForwardVelocityTuner extends OpMode {
 
     private boolean end;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -372,6 +393,7 @@ class ForwardVelocityTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         if (gamepad1.bWasPressed()) {
             stopRobot();
             requestOpModeStop();
@@ -442,8 +464,11 @@ class LateralVelocityTuner extends OpMode {
 
     private boolean end;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -480,6 +505,7 @@ class LateralVelocityTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         if (gamepad1.bWasPressed()) {
             stopRobot();
             requestOpModeStop();
@@ -537,7 +563,7 @@ class LateralVelocityTuner extends OpMode {
  */
 class ForwardZeroPowerAccelerationTuner extends OpMode {
     private final ArrayList<Double> accelerations = new ArrayList<>();
-    public static double VELOCITY = 20;
+    public static double VELOCITY = 30;
 
     private double previousVelocity;
     private long previousTimeNano;
@@ -545,8 +571,11 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
     private boolean stopping;
     private boolean end;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -579,6 +608,7 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         if (gamepad1.bWasPressed()) {
             stopRobot();
             requestOpModeStop();
@@ -643,14 +673,17 @@ class ForwardZeroPowerAccelerationTuner extends OpMode {
  */
 class LateralZeroPowerAccelerationTuner extends OpMode {
     private final ArrayList<Double> accelerations = new ArrayList<>();
-    public static double VELOCITY = 9; // TODO
+    public static double VELOCITY = 30;
     private double previousVelocity;
     private long previousTimeNano;
     private boolean stopping;
     private boolean end;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -683,6 +716,8 @@ class LateralZeroPowerAccelerationTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
+        lift.update();
         if (gamepad1.bWasPressed()) {
             stopRobot();
             requestOpModeStop();
@@ -747,8 +782,11 @@ class TranslationalTuner extends OpMode {
     private Path forwards;
     private Path backwards;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -777,6 +815,7 @@ class TranslationalTuner extends OpMode {
     /** This runs the OpMode, updating the Follower as well as printing out the debug statements to the Telemetry */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
         draw();
 
@@ -816,8 +855,11 @@ class HeadingTuner extends OpMode {
     private Path forwards;
     private Path backwards;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -852,6 +894,7 @@ class HeadingTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
         draw();
 
@@ -888,8 +931,11 @@ class DriveTuner extends OpMode {
     private PathChain forwards;
     private PathChain backwards;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -933,6 +979,7 @@ class DriveTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
         draw();
 
@@ -970,8 +1017,11 @@ class Line extends OpMode {
     private Path forwards;
     private Path backwards;
 
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -999,6 +1049,7 @@ class Line extends OpMode {
     /** This runs the OpMode, updating the Follower as well as printing out the debug statements to the Telemetry */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
         draw();
 
@@ -1037,8 +1088,12 @@ class CentripetalTuner extends OpMode {
     private Path forwards;
     private Path backwards;
 
+
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -1074,6 +1129,7 @@ class CentripetalTuner extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
         draw();
         if (!follower.isBusy()) {
@@ -1113,6 +1169,7 @@ class Triangle extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
         draw();
 
@@ -1121,8 +1178,12 @@ class Triangle extends OpMode {
         }
     }
 
+
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -1191,9 +1252,12 @@ class Circle extends OpMode {
         follower.update();
         drawOnlyCurrent();
     }
-
+    
+    private Lift lift;
     @Override
-    public void init() {
+public void init() {
+        lift = new Lift(hardwareMap);
+        lift.setTargetTicks(Lift.minTicks);
         follower.setStartingPose(new Pose(72, 72));
     }
 
@@ -1203,6 +1267,7 @@ class Circle extends OpMode {
      */
     @Override
     public void loop() {
+        lift.update();
         follower.update();
         draw();
 

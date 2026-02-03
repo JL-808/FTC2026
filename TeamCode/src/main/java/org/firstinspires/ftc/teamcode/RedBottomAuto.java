@@ -11,14 +11,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
 
 import java.util.function.Supplier;
 
-@Autonomous (name="Blue Bottom", group="Blue")
+@Autonomous (name="Red Bottom", group="Red")
 public class RedBottomAuto extends OpMode {
-    private final Pose startPose = new Pose(88, 9, Math.toRadians(90));
-    private final Pose launchPose = new Pose(83.000, 25.000, LaunchCalculator.heading(83.000, 25.000, true));
+    private final Pose startPose = new Pose(87, 9.5, Math.toRadians(90));
+    private final Pose launchPose = new Pose(86.000, 25.000, LaunchCalculator.heading(86.000, 25.000, true));
     public enum STATES {
         INIT,
         TO_INITIAL_LAUNCH,
@@ -68,21 +67,20 @@ public class RedBottomAuto extends OpMode {
                                 new Pose(144 - Globals.BEGIN_INTAKE, Globals.SECOND_ROW_ARTIFACTS)
                         )
                 ).setLinearHeadingInterpolation(launchPose.getHeading(), Math.toRadians(0))
-                .setNoDeceleration()
                 .build();
 
         Intake1 = follower.pathBuilder().addPath(
                         new BezierLine(
                                 new Pose(144 - Globals.BEGIN_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
-                                new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS)
+                                new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE + 2, Globals.SECOND_ROW_ARTIFACTS)
                         )
                 ).setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
         ToLaunch1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
-                                //new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
+                                new Pose(144 - Globals.SECOND_ROW_STOP_INTAKE + 2, Globals.SECOND_ROW_ARTIFACTS),
+                                new Pose(launchPose.getX(), Globals.SECOND_ROW_ARTIFACTS),
                                 launchPose
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(0), launchPose.getHeading())
@@ -95,21 +93,20 @@ public class RedBottomAuto extends OpMode {
                                 new Pose(144 - Globals.BEGIN_INTAKE, Globals.FIRST_ROW_ARTIFACTS)
                         )
                 ).setLinearHeadingInterpolation(launchPose.getHeading(), Math.toRadians(0))
-                .setNoDeceleration()
                 .build();
 
         Intake2 = follower.pathBuilder().addPath(
                 new BezierLine(
                         new Pose(144 - Globals.BEGIN_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
-                        new Pose(144 - Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS)
+                        new Pose(144 - Globals.FIRST_ROW_STOP_INTAKE + 1, Globals.FIRST_ROW_ARTIFACTS)
                 )
                 ).setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
         ToLaunch2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(144 - Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
-                                //new Pose(launchPose.getX(), Globals.FIRST_ROW_ARTIFACTS),
+                                new Pose(144 - Globals.FIRST_ROW_STOP_INTAKE + 1, Globals.FIRST_ROW_ARTIFACTS),
+                                new Pose(launchPose.getX(), Globals.FIRST_ROW_ARTIFACTS),
                                 launchPose
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(0), launchPose.getHeading())
@@ -171,7 +168,9 @@ public class RedBottomAuto extends OpMode {
                     follower.followPath(ToIntake1);
                     currentState = STATES.TO_INTAKE_1;
                 } else {
-                    ballLaunch.launch(); // continuously try launching
+                    if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
+                        ballLaunch.launch();
+                    }
                 }
                 if (ballLaunch.currentState == BallLaunch.STATES.LAUNCHING) {
                     intake.pullIn();
@@ -181,7 +180,7 @@ public class RedBottomAuto extends OpMode {
                 break;
             case TO_INTAKE_1:
                 if (!follower.isBusy()) {
-                    follower.followPath(Intake1);
+                    follower.followPath(Intake1, Globals.INTAKE_DRIVE_POWER, true);
                     currentState = STATES.INTAKE_1;
                     intake.pullIn();
                 }
@@ -191,14 +190,14 @@ public class RedBottomAuto extends OpMode {
                     intake.stop();
                     follower.followPath(ToLaunch1);
                     currentState = STATES.TO_LAUNCH_1;
-
-                    ballLaunch.setTargetVelocity(Globals.FAR_LAUNCH_VELOCITY);
-                    ballLaunch.launchCount = 3;
                 }
                 break;
             case TO_LAUNCH_1:
                 if (!follower.isBusy()) {
                     currentState = STATES.LAUNCH_1;
+                    ballLaunch.setTargetVelocity(Globals.FAR_LAUNCH_VELOCITY);
+                    ballLaunch.launchCount = 3;
+                    ballLaunch.currentState = BallLaunch.STATES.SPINNING_UP;
                 }
                 break;
             case LAUNCH_1:
@@ -206,7 +205,9 @@ public class RedBottomAuto extends OpMode {
                     currentState = STATES.TO_INTAKE_2;
                     follower.followPath(ToIntake2);
                 } else {
-                    ballLaunch.launch(); // continuously try launching
+                    if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
+                        ballLaunch.launch();
+                    }
                 }
                 if (ballLaunch.currentState == BallLaunch.STATES.LAUNCHING) {
                     intake.pullIn();
@@ -216,7 +217,7 @@ public class RedBottomAuto extends OpMode {
                 break;
             case TO_INTAKE_2:
                 if (!follower.isBusy()) {
-                    follower.followPath(Intake2);
+                    follower.followPath(Intake2, Globals.INTAKE_DRIVE_POWER, true);
                     currentState = STATES.INTAKE_2;
                     intake.pullIn();
                 }
@@ -226,14 +227,14 @@ public class RedBottomAuto extends OpMode {
                     intake.stop();
                     follower.followPath(ToLaunch2);
                     currentState = STATES.TO_LAUNCH_2;
-
-                    ballLaunch.setTargetVelocity(Globals.SHORT_LAUNCH_VELOCITY);
-                    ballLaunch.launchCount = 3;
                 }
                 break;
             case TO_LAUNCH_2:
                 if (!follower.isBusy()) {
                     currentState = STATES.LAUNCH_2;
+                    ballLaunch.setTargetVelocity(Globals.FAR_LAUNCH_VELOCITY);
+                    ballLaunch.launchCount = 3;
+                    ballLaunch.currentState = BallLaunch.STATES.SPINNING_UP;
                 }
                 break;
             case LAUNCH_2:
@@ -255,8 +256,9 @@ public class RedBottomAuto extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        if (opmodeTimer.getElapsedTime() >= 25000 && currentState != STATES.END) {
+        if (opmodeTimer.getElapsedTime() >= Globals.END_TIME * 1000 && currentState != STATES.END) {
             currentState = STATES.END;
+            intake.stop();
             follower.followPath(EndPathChain.get());
         }
 
@@ -267,6 +269,7 @@ public class RedBottomAuto extends OpMode {
 
 
         telemetry.addData("ball launch", ballLaunch.currentState);
+        telemetry.addData("ball launch velocity", ballLaunch.getVelocity());
         telemetry.addData("launch count", ballLaunch.launchCount);
         telemetry.addData("STATE", currentState);
         telemetry.addData("x", follower.getPose().getX());

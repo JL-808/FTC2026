@@ -11,11 +11,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import java.util.function.Supplier;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
 
 @Autonomous (name="Blue Bottom", group="Blue")
 public class BlueBottomAuto extends OpMode {
-    private final Pose startPose = new Pose(56.000, 9, Math.toRadians(-90));
+    private final Pose startPose = new Pose(57.000, 9, Math.toRadians(-90));
     private final Pose launchPose1 = new Pose(61.000, 25.000, LaunchCalculator.heading(61.000, 25.000, false));
     private final Pose launchPose2 = new Pose(61.000, 84.000, LaunchCalculator.heading(61.000, 84.000, false));
     public enum STATES {
@@ -67,7 +66,6 @@ public class BlueBottomAuto extends OpMode {
                                 new Pose(Globals.BEGIN_INTAKE, Globals.FIRST_ROW_ARTIFACTS)
                         )
                 ).setLinearHeadingInterpolation(launchPose1.getHeading(), Math.toRadians(180))
-                .setNoDeceleration()
                 .build();
 
         Intake1 = follower.pathBuilder().addPath(
@@ -81,7 +79,7 @@ public class BlueBottomAuto extends OpMode {
         ToLaunch1 = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(Globals.FIRST_ROW_STOP_INTAKE, Globals.FIRST_ROW_ARTIFACTS),
-                                //new Pose(launchPose1.getX(), Globals.FIRST_ROW_ARTIFACTS),
+                                new Pose(launchPose1.getX(), Globals.FIRST_ROW_ARTIFACTS),
                                 launchPose1
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), launchPose1.getHeading())
@@ -94,7 +92,6 @@ public class BlueBottomAuto extends OpMode {
                                 new Pose(Globals.BEGIN_INTAKE, Globals.SECOND_ROW_ARTIFACTS)
                         )
                 ).setLinearHeadingInterpolation(launchPose1.getHeading(), Math.toRadians(180))
-                .setNoDeceleration()
                 .build();
 
         Intake2 = follower.pathBuilder().addPath(
@@ -108,7 +105,7 @@ public class BlueBottomAuto extends OpMode {
         ToLaunch2 = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(Globals.SECOND_ROW_STOP_INTAKE, Globals.SECOND_ROW_ARTIFACTS),
-                                //new Pose(launchPose2.getX(), Globals.SECOND_ROW_ARTIFACTS),
+                                new Pose(launchPose2.getX(), Globals.SECOND_ROW_ARTIFACTS),
                                 launchPose2
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), launchPose2.getHeading())
@@ -126,7 +123,6 @@ public class BlueBottomAuto extends OpMode {
     @Override
     public void init() {
         Globals.isRed = false;
-
         opmodeTimer = new Timer();
 
         ballLaunch = new BallLaunch(hardwareMap);
@@ -170,7 +166,9 @@ public class BlueBottomAuto extends OpMode {
                     follower.followPath(ToIntake1);
                     currentState = STATES.TO_INTAKE_1;
                 } else {
-                    ballLaunch.launch(); // continuously try launching
+                    if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
+                        ballLaunch.launch();
+                    }
                 }
                 if (ballLaunch.currentState == BallLaunch.STATES.LAUNCHING) {
                     intake.pullIn();
@@ -180,7 +178,7 @@ public class BlueBottomAuto extends OpMode {
                 break;
             case TO_INTAKE_1:
                 if (!follower.isBusy()) {
-                    follower.followPath(Intake1);
+                    follower.followPath(Intake1, Globals.INTAKE_DRIVE_POWER, true);
                     currentState = STATES.INTAKE_1;
                     intake.pullIn();
                 }
@@ -205,7 +203,9 @@ public class BlueBottomAuto extends OpMode {
                     currentState = STATES.TO_INTAKE_2;
                     follower.followPath(ToIntake2);
                 } else {
-                    ballLaunch.launch(); // continuously try launching
+                    if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
+                        ballLaunch.launch();
+                    }
                 }
                 if (ballLaunch.currentState == BallLaunch.STATES.LAUNCHING) {
                     intake.pullIn();
@@ -215,7 +215,7 @@ public class BlueBottomAuto extends OpMode {
                 break;
             case TO_INTAKE_2:
                 if (!follower.isBusy()) {
-                    follower.followPath(Intake2);
+                    follower.followPath(Intake2, Globals.INTAKE_DRIVE_POWER, true);
                     currentState = STATES.INTAKE_2;
                     intake.pullIn();
                 }
@@ -254,8 +254,9 @@ public class BlueBottomAuto extends OpMode {
     @Override
     public void loop() {
         follower.update();
-        if (opmodeTimer.getElapsedTime() >= 25000 && currentState != STATES.END) {
+        if (opmodeTimer.getElapsedTime() >= Globals.END_TIME * 1000 && currentState != STATES.END) {
             currentState = STATES.END;
+            intake.stop();
             follower.followPath(EndPathChain.get());
         }
 
@@ -266,6 +267,7 @@ public class BlueBottomAuto extends OpMode {
 
 
         telemetry.addData("ball launch", ballLaunch.currentState);
+        telemetry.addData("ball launch velocity", ballLaunch.getVelocity());
         telemetry.addData("launch count", ballLaunch.launchCount);
         telemetry.addData("STATE", currentState);
         telemetry.addData("x", follower.getPose().getX());

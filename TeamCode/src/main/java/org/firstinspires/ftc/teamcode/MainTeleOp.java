@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.LaunchCalculator;
 
 import java.util.function.Supplier;
 
@@ -24,7 +23,6 @@ public class MainTeleOp extends OpMode {
     private boolean parking;
     private Supplier<PathChain> BlueParkingPathChain;
     private Supplier<PathChain> RedParkingPathChain;
-    private Supplier<PathChain> SpinToLaunchPathChain;
     private TelemetryManager telemetryM;
 
     private final ElapsedTime runtime = new ElapsedTime();
@@ -51,14 +49,10 @@ public class MainTeleOp extends OpMode {
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(111.9, 26.4))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(315), 0.8))
                 .build();
-        SpinToLaunchPathChain = () -> follower.pathBuilder()
-                .addPath(new Path(new BezierLine(follower::getPose, follower::getPose)))
-                .setLinearHeadingInterpolation(follower.getHeading(), LaunchCalculator.heading(follower.getPose().getX(), follower.getPose().getY(), Globals.isRed))
-                .build();
+
         lift = new Lift(hardwareMap);
         ballLaunch = new BallLaunch(hardwareMap);
         intake = new Intake(hardwareMap);
-
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
@@ -89,7 +83,13 @@ public class MainTeleOp extends OpMode {
             ballLaunch.forceLaunch = false;
         }
 
+        ballLaunch.unjam = gamepad2.y;
         ballLaunch.update();
+
+
+        if (ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH || ballLaunch.currentState == BallLaunch.STATES.READY_TO_LAUNCH_WAITED) {
+            gamepad1.rumble(50);
+        }
 
         if (gamepad1.a) {
             ballLaunch.launch();
@@ -97,7 +97,7 @@ public class MainTeleOp extends OpMode {
 
         double multiplier;
         if (gamepad1.left_bumper) {
-            multiplier = 0.5;
+            multiplier = 0.3;
         } else {
             multiplier = 1;
         }
@@ -122,11 +122,12 @@ public class MainTeleOp extends OpMode {
                 follower.setTeleOpDrive(
                         -gamepad1.left_stick_y * multiplier,
                         -gamepad1.left_stick_x * multiplier * 0.1,
-                        -gamepad1.right_stick_x * multiplier,
+                        -gamepad1.right_stick_x * multiplier * 0.75,
                         true
                 );
             }
         }
+
 
         if (gamepad2.right_bumper && !gamepad2.left_bumper) {
             intake.pushOut();
@@ -147,7 +148,7 @@ public class MainTeleOp extends OpMode {
 //        }
 
         if (gamepad1.rightBumperWasPressed()) {
-            follower.followPath(SpinToLaunchPathChain.get());
+            follower.turnTo(LaunchCalculator.heading(follower.getPose().getX(), follower.getPose().getY(), Globals.isRed));
         }
         if (gamepad1.rightBumperWasReleased()) {
             follower.startTeleopDrive();
@@ -163,6 +164,7 @@ public class MainTeleOp extends OpMode {
         telemetryM.addData("X", follower.getPose().getX());
         telemetryM.addData("Y", follower.getPose().getY());
         telemetryM.addData("heading", follower.getPose().getHeading());
+        telemetryM.addData("targetHeading", LaunchCalculator.heading(follower.getPose().getX(), follower.getPose().getY(), Globals.isRed));
         telemetryM.addLine("");
         telemetryM.addLine("---- Robot Status ----");
         telemetryM.debug("Ball Launch (state, target_vel, current_vel)", ballLaunch.currentState, ballLaunch.getTargetVelocity(), ballLaunch.getVelocity());
